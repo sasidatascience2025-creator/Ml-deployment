@@ -7,18 +7,22 @@ app = Flask(__name__)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model = joblib.load(os.path.join(BASE_DIR, "logistic_regression_model.joblib"))
 
-@app.route('/')
+@app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "status": "API is running",
-        "message": "Use /predict endpoint"
+        "status": "OK",
+        "service": "ML Prediction API",
+        "endpoint": "/predict"
     })
 
-@app.route('/predict', methods=['POST'])
+@app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
-    prediction = model.predict([data["features"]])
+    features = data.get("features")
+
+    prediction = model.predict([features])
     return jsonify({"prediction": int(prediction[0])})
 
 if __name__ == "__main__":
-    app.run()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
